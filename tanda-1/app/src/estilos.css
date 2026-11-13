@@ -1,0 +1,341 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/jetbrains-mono';
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, monospace;
+
+  --color-primario: #c81e1e;
+  --color-navy: #0c1929;
+  --color-papel: #fafbfc;
+  --color-cuerpo: #3d4f63;
+  --color-secundario: #64748b;
+  --color-borde: #e6eaf0;
+  --color-borde-suave: #eef1f5;
+  --color-hundido: #f3f5f8;
+
+  --shadow-panel: 0 1px 2px rgb(12 25 41 / 0.04), 0 8px 24px -6px rgb(12 25 41 / 0.1), 0 24px 48px -24px rgb(12 25 41 / 0.08);
+  --ease-calmo: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-papel);
+  color: var(--color-cuerpo);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  font-feature-settings: 'cv11', 'ss01';
+}
+
+::selection {
+  background: rgb(200 30 30 / 0.14);
+}
+
+.panel {
+  background: rgb(255 255 255 / 0.9);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border: 1px solid var(--color-borde);
+  border-radius: 16px;
+  box-shadow: var(--shadow-panel);
+}
+
+/* Vidrio: piezas flotantes sobre el grafo */
+/* Sin backdrop-filter: desenfocar el canvas en vivo detrás de cada pieza cuesta un repintado por cuadro */
+.vidrio {
+  /* capa propia: la sombra se rasteriza una vez y la GPU solo la compone */
+  transform: translateZ(0);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.96), rgb(255 255 255 / 0.9));
+  border: 1px solid rgb(255 255 255 / 0.9);
+  box-shadow:
+    0 0 0 1px rgb(12 25 41 / 0.05),
+    0 1px 2px rgb(12 25 41 / 0.05),
+    0 12px 32px -12px rgb(12 25 41 / 0.18);
+}
+
+.desplazable {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #d5dbe3 transparent;
+}
+
+/* Texto de una nota (Markdown renderizado) */
+.prosa {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--color-cuerpo);
+}
+.prosa > * + * {
+  margin-top: 0.8em;
+}
+.prosa h1,
+.prosa h2,
+.prosa h3,
+.prosa h4 {
+  color: var(--color-navy);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  margin-top: 1.5em;
+}
+.prosa h1 {
+  font-size: 1.15em;
+}
+.prosa h2 {
+  font-size: 1.05em;
+}
+.prosa h3,
+.prosa h4 {
+  font-size: 1em;
+}
+.prosa strong {
+  color: var(--color-navy);
+  font-weight: 650;
+}
+.prosa ul,
+.prosa ol {
+  padding-left: 1.2em;
+}
+.prosa ul {
+  list-style: none;
+}
+.prosa ul > li {
+  position: relative;
+}
+.prosa ul > li::before {
+  content: '';
+  position: absolute;
+  left: -0.95em;
+  top: 0.72em;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #c3cbd6;
+}
+.prosa ol {
+  list-style: decimal;
+}
+.prosa li + li {
+  margin-top: 0.35em;
+}
+.prosa li::marker {
+  color: var(--color-secundario);
+}
+.prosa code {
+  font-family: var(--font-mono);
+  font-size: 0.84em;
+  background: var(--color-hundido);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: 5px;
+  padding: 0.08em 0.36em;
+  color: var(--color-navy);
+}
+.prosa pre {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.6;
+  background: var(--color-hundido);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: 10px;
+  padding: 12px 14px;
+  overflow-x: auto;
+}
+.prosa pre code {
+  background: none;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
+}
+.prosa blockquote {
+  border-left: 2px solid var(--color-borde);
+  padding-left: 12px;
+  color: var(--color-secundario);
+}
+.prosa a {
+  color: var(--color-navy);
+  text-decoration: underline;
+  text-decoration-color: #c3cbd6;
+  text-underline-offset: 3px;
+}
+.prosa table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+}
+.prosa th,
+.prosa td {
+  border-bottom: 1px solid var(--color-borde-suave);
+  padding: 6px 8px;
+  text-align: left;
+}
+.prosa th {
+  color: var(--color-navy);
+  font-weight: 600;
+}
+.prosa hr {
+  border: 0;
+  border-top: 1px solid var(--color-borde);
+}
+.prosa .enlace-nota {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 7px 0 6px;
+  border-radius: 6px;
+  background: var(--color-hundido);
+  border: 1px solid var(--color-borde);
+  color: var(--color-navy);
+  font-weight: 550;
+  font-size: 0.92em;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color 160ms var(--ease-calmo),
+    background 160ms var(--ease-calmo);
+}
+.prosa .enlace-nota::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--punto, #64748b);
+}
+.prosa .enlace-nota:hover {
+  background: #fff;
+  border-color: #c3cbd6;
+}
+.prosa .enlace-roto {
+  color: var(--color-secundario);
+  text-decoration: line-through;
+  text-decoration-color: #c3cbd6;
+}
+
+/* Fondo: imagen orbital (app/public/fondo.png) sobre papel; quieto, el movimiento lo pone el grafo */
+.fondo {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--color-papel) url('/fondo.png') center / cover no-repeat;
+}
+
+/* Etiquetas del grafo (CSS2D) */
+.ancla-etiqueta {
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.etiqueta-nodo {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, var(--desplazar, 12px));
+  white-space: nowrap;
+  pointer-events: none;
+  will-change: opacity;
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  color: var(--color-navy);
+  text-shadow:
+    0 0 2px #fafbfc,
+    0 0 6px #fafbfc,
+    0 0 12px #fafbfc;
+}
+.etiqueta-nodo.es-vecina {
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--color-secundario);
+  max-width: 170px;
+}
+.etiqueta-nodo.es-seleccion {
+  padding: 4px 10px 5px;
+  border-radius: 999px;
+  background: var(--color-navy);
+  color: #fff;
+  text-shadow: none;
+  font-size: 12px;
+  box-shadow: 0 6px 18px -6px rgb(12 25 41 / 0.45);
+}
+.etiqueta-constelacion {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #6b7a8e;
+  text-shadow:
+    0 0 4px #fafbfc,
+    0 0 10px #fafbfc;
+}
+.etiqueta-constelacion .punto {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tono);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tono) 18%, transparent);
+}
+/* tema dentro de una constelación grande: más discreto que el rótulo del tipo */
+.etiqueta-tema {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  pointer-events: none;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--tono) 70%, #3d4f63);
+  background: color-mix(in srgb, var(--tono) 9%, #fafbfc);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--tono) 22%, transparent);
+}
+.etiqueta-constelacion .cuenta {
+  font-family: var(--font-mono);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: #a3aebd;
+}
+
+@keyframes latido {
+  0% {
+    box-shadow: 0 0 0 0 rgb(200 30 30 / 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgb(200 30 30 / 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(200 30 30 / 0);
+  }
+}
+.punto-vivo {
+  animation: latido 2.4s var(--ease-calmo) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .punto-vivo,
+  .fondo::before,
+  .fondo::after,
+  .fondo .cian {
+    animation: none;
+  }
+}

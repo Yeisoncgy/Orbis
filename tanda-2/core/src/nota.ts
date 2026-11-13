@@ -1,0 +1,72 @@
+import { parse, stringify } from 'yaml';
+import { ESTADOS, TIPOS, type Estado, type Nota, type Tipo } from './tipos.ts';
+
+export function normalizar(texto: string): string {
+  return texto
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase();
+}
+
+export function slug(texto: string): string {
+  return normalizar(texto)
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+    .replace(/-+$/g, '');
+}
+
+export function hoy(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// [[destino]], [[destino|alias]], [[destino#seccion]]
+export function extraerEnlaces(contenido: string): string[] {
+  const vistos = new Set<string>();
+  for (const m of contenido.matchAll(/\[\[([^\]\n]+)\]\]/g)) {
+    const destino = m[1].split('|')[0].split('#')[0].trim();
+    if (destino) vistos.add(destino);
+  }
+  return [...vistos];
+}
+
+export class ErrorNota extends Error {}
+
+export function leerNota(id: string, texto: string): Nota {
+  const m = texto.replace(/^﻿/, '').match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?([\s\S]*)$/);
+  if (!m) throw new ErrorNota(`${id}: falta el frontmatter`);
+  const fm = (parse(m[1]) ?? {}) as Record<string, unknown>;
+  const contenido = m[2].trim();
+
+  const tipo = String(fm.tipo ?? '') as Tipo;
+  if (!TIPOS.includes(tipo)) throw new ErrorNota(`${id}: tipo "${fm.tipo}" no válido`);
+  const estado = (ESTADOS.includes(fm.estado as Estado) ? fm.estado : 'consolidada') as Estado;
+
+  return {
+    id,
+    titulo: String(fm.titulo ?? id),
+    tipo,
+    descripcion: String(fm.descripcion ?? ''),
+    estado,
+    tags: Array.isArray(fm.tags) ? fm.tags.map(String) : [],
+    creado: String(fm.creado ?? ''),
+    actualizado: String(fm.actualizado ?? fm.creado ?? ''),
+    fusionadaEn: fm.fusionada_en ? String(fm.fusionada_en) : undefined,
+    contenido,
+    enlaces: extraerEnlaces(contenido),
+  };
+}
+
+export function escribirNota(nota: Nota): string {
+  const fm: Record<string, unknown> = {
+    titulo: nota.titulo,
+    tipo: nota.tipo,
+    descripcion: nota.descripcion,
+    estado: nota.estado,
+    tags: nota.tags,
+    creado: nota.creado,
+    actualizado: nota.actualizado,
+  };
+  if (nota.fusionadaEn) fm.fusionada_en = nota.fusionadaEn;
+  return `---\n${stringify(fm, { lineWidth: 0 }).trimEnd()}\n---\n\n${nota.contenido.trim()}\n`;
+}

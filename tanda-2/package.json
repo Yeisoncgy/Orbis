@@ -1,0 +1,49 @@
+{
+  "name": "cerebro",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Cerebros de conocimiento en Markdown para agentes de Claude Code",
+  "scripts": {
+    "build": "esbuild cli/cerebro.ts --bundle --platform=node --format=esm --target=node20 --outfile=dist/cerebro.mjs --banner:js=\"import{createRequire as __cr}from'module';const require=__cr(import.meta.url);\"",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p app",
+    "test": "node --test \"core/test/*.test.ts\"",
+    "cerebro": "node cli/cerebro.ts",
+    "instalar": "node scripts/instalar.mjs",
+    "build:app": "vite build",
+    "app": "vite build && node servidor/servidor.ts --abrir",
+    "app:abrir": "node servidor/servidor.ts --abrir",
+    "app:dev": "vite",
+    "icono": "node scripts/crear-icono.ts",
+    "probar:apagado": "node scripts/probar-apagado.ts",
+    "abierto": "node scripts/cerebro-abierto.ts"
+  },
+  "dependencies": {
+    "@fontsource-variable/jetbrains-mono": "^5.3.0",
+    "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
+    "@tanstack/react-query": "^5.105.0",
+    "3d-force-graph": "^1.80.1",
+    "d3-force-3d": "^3.0.6",
+    "framer-motion": "^14.6.0",
+    "lucide-react": "^1.61.0",
+    "marked": "^18.1.2",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "three": "^0.186.1",
+    "three-spritetext": "^1.10.0",
+    "yaml": "^2.8.0",
+    "zustand": "^5.0.16"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/three": "^0.186.0",
+    "@vitejs/plugin-react": "^4.7.0",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.0",
+    "vite": "^6.4.5"
+  }
+}
