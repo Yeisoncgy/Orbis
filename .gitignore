@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.tmp
+# bocetos de diseño: usan datos de cerebros reales
+diseno/
